@@ -1,4 +1,4 @@
-package com.samuelbjohnson.truwisatech.rundas.football.data;
+package com.truwisatech.rundas.football.data;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,8 +10,8 @@ public class RundasMySqlConnectionFactory implements ConnectionFactory {
 	public Connection buildConnection() {
 		Connection conn = null;
 		
-		String DRIVER = "org.sqlite.JDBC";
-		String URL = "jdbc:sqlite:localhost:footballStats";
+		String DRIVER = "com.mysql.jdbc.Driver";
+		String URL = "jdbc:mysql://localhost:8889/Rundas?user=rundas&password=Rundas1";
 		
 		try {
 			Class.forName(DRIVER);

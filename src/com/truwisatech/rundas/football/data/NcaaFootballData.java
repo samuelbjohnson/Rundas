@@ -1,4 +1,4 @@
-package com.samuelbjohnson.truwisatech.rundas.football.data;
+package com.truwisatech.rundas.football.data;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,10 +9,9 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.samuelbjohnson.truwisatech.rundas.football.data.beans.GameResult;
-import com.samuelbjohnson.truwisatech.rundas.football.data.beans.NcaaTeam;
-import com.samuelbjohnson.truwisatech.rundas.football.data.beans.ScheduledGame;
-import com.samuelbjohnson.truwisatech.rundas.football.data.beans.Team;
+import com.truwisatech.rundas.football.data.beans.GameResult;
+import com.truwisatech.rundas.football.data.beans.NcaaTeam;
+import com.truwisatech.rundas.football.data.beans.ScheduledGame;
 
 public class NcaaFootballData implements NcaaFootballDao {
 	private ConnectionFactory connectionFactory;
@@ -22,8 +21,9 @@ public class NcaaFootballData implements NcaaFootballDao {
 		this.connectionFactory = connectionFactory;
 	}
 	
-	public NcaaFootballData() {
-		conn = connectionFactory.buildConnection();
+	public NcaaFootballData(ConnectionFactory connectionFactory) {
+		this.connectionFactory = connectionFactory;
+		conn = this.connectionFactory.buildConnection();
 	}
 	
 	@Override
@@ -31,7 +31,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 			
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.NcaaTeam WHERE ncaaTeamId=?"
+					"SELECT * FROM Rundas.NcaaTeam WHERE ncaaTeamId=?"
 			);
 			statement.setInt(1, teamId);
 			
@@ -61,7 +61,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public NcaaTeam[] findTeams() {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.NcaaTeam"
+					"SELECT * FROM Rundas.NcaaTeam"
 			);
 			
 			ResultSet resultSet = statement.executeQuery();
@@ -99,7 +99,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 		try {
 			
 			PreparedStatement statement = conn.prepareStatement(
-					"INSERT INTO rundas.NcaaTeam VALUES(?, ?)"
+					"INSERT INTO Rundas.NcaaTeam VALUES(?, ?)"
 			);
 			statement.setInt(1, team.getNcaaTeamId());
 			statement.setString(2, team.getNcaaTeamName());
@@ -120,7 +120,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public ScheduledGame findScheduledGame(int gameId) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.ScheduledGames WHERE gameId=?"
+					"SELECT * FROM Rundas.ScheduledGames WHERE gameId=?"
 			);
 			statement.setInt(1, gameId);
 			ResultSet resultSet = statement.executeQuery();
@@ -153,7 +153,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public ScheduledGame findScheduledGame(Date gameDate, int homeId, int awayId) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.ScheduledGames WHERE gameDate=? AND awayTeamId=? AND homeTeamId=?"
+					"SELECT * FROM Rundas.ScheduledGames WHERE gameDate=? AND awayTeamId=? AND homeTeamId=?"
 			);
 			statement.setDate(1, new java.sql.Date(gameDate.getTime()));
 			statement.setInt(2, awayId);
@@ -190,7 +190,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public ScheduledGame[] findScheduledGames(int teamId) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.scheduledGames WHERE " +
+					"SELECT * FROM Rundas.scheduledGames WHERE " +
 					"awayTeamId=? OR homeTeamId=?"
 			);
 			statement.setInt(1, teamId);
@@ -226,13 +226,13 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public boolean insertScheduledGame(ScheduledGame game) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"INSERT INTO rundas.ScheduledGames (resultId, gameDate, awayTeamId, homeTeamId) " +
+					"INSERT INTO Rundas.ScheduledGames (gameDate, awayTeamId, homeTeamId) " +
 					"VALUES(?, ?, ?)"
 			);
-			statement.setInt(1, game.getResult().getId());
-			statement.setDate(2, new java.sql.Date(game.getGameDate().getTime()));
-			statement.setInt(3, game.getAwayTeam().getNcaaTeamId());
-			statement.setInt(4, game.getHomeTeam().getNcaaTeamId());
+
+			statement.setDate(1, new java.sql.Date(game.getGameDate().getTime()));
+			statement.setInt(2, game.getAwayTeam().getNcaaTeamId());
+			statement.setInt(3, game.getHomeTeam().getNcaaTeamId());
 			
 			int result = statement.executeUpdate();
 			if (result != 1) {
@@ -248,10 +248,36 @@ public class NcaaFootballData implements NcaaFootballDao {
 	}
 	
 	@Override
+	public int updateScheduledGame(ScheduledGame game) {
+		try {
+			if (game.getGameId() < 0) {
+				return -1;
+			}
+			PreparedStatement statement = conn.prepareStatement(
+					"UPDATE Rundas.ScheduledGames SET resultId=?, gameDate=?, awayTeamId=?, homeTeamId=? " +
+					"WHERE gameId=?"
+			);
+			statement.setInt(1, game.getResult().getId());
+			statement.setDate(2, new java.sql.Date(game.getGameDate().getTime()));
+			statement.setInt(3, game.getAwayTeam().getNcaaTeamId());
+			statement.setInt(4, game.getHomeTeam().getNcaaTeamId());
+			statement.setInt(5, game.getGameId());
+			
+			int result = statement.executeUpdate();
+			return result;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		
+		return -1;
+	}
+	
+	@Override
 	public GameResult findGame(int gameId) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.GameResults WHERE gameId = ?"
+					"SELECT * FROM Rundas.GameResult WHERE id = ?"
 			);
 			statement.setInt(1, gameId);
 			
@@ -285,8 +311,8 @@ public class NcaaFootballData implements NcaaFootballDao {
 	public GameResult[] findTeamResults(int teamId) {
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"SELECT * FROM rundas.GameResults r WHERE r.Id in " +
-					"SELECT resultId FROM rundas.ScheduledGames" +
+					"SELECT * FROM Rundas.GameResult r WHERE r.Id in " +
+					"SELECT resultId FROM Rundas.ScheduledGames" +
 					"WHERE resultId <> null AND (homeTeam = ? OR awayTeam = ?)"
 			);
 			statement.setInt(1, teamId);
@@ -324,9 +350,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 			return false;
 		}
 		if (findScheduledGame(game.getScheduledGame().getGameId()) == null) {
-			if (!insertScheduledGame(game.getScheduledGame())) {
 				return false;
-			}
 		}
 		
 		if (findGame(game.getId()) != null) {
@@ -335,16 +359,17 @@ public class NcaaFootballData implements NcaaFootballDao {
 		
 		try {
 			PreparedStatement statement = conn.prepareStatement(
-					"INSERT INTO footballStats.results VALUES(?, ?, ?)"
+					"INSERT INTO Rundas.GameResult VALUES(?, ?, ?, ?)"
 			);
-			statement.setInt(1, game.getGameId());
-			statement.setInt(2, game.getAwayScore());
+			statement.setInt(1, game.getId());
+			statement.setInt(2, game.getScheduledGame().getGameId());
 			statement.setInt(3, game.getHomeScore());
+			statement.setInt(4, game.getAwayScore());
 			
 			int result = statement.executeUpdate();
 			
 			if (result != 1) {
-				throw new FootballDataException("Error inserting game " + game.getGameId() + " into results table");
+				throw new FootballDataException("Error inserting game " + game.getId() + " into results table");
 			}
 		}
 		catch (SQLException s) {

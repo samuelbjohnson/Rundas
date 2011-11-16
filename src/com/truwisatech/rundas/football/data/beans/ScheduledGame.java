@@ -1,10 +1,10 @@
-package com.samuelbjohnson.truwisatech.rundas.football.data.beans;
+package com.truwisatech.rundas.football.data.beans;
 
 import java.util.Date;
 
 public class ScheduledGame {
 	
-	private int gameId;
+	private int gameId = -1;
 	
 	private NcaaTeam homeTeam;
 	private NcaaTeam awayTeam;

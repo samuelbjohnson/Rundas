@@ -1,4 +1,4 @@
-package com.samuelbjohnson.truwisatech.rundas.football.data.beans;
+package com.truwisatech.rundas.football.data.beans;
 
 public class GameResult {	
 	

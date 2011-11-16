@@ -1,4 +1,4 @@
-package com.samuelbjohnson.truwisatech.rundas.football.data;
+package com.truwisatech.rundas.football.data;
 
 public class FootballDataException extends RuntimeException {
 
