@@ -8,11 +8,10 @@ import java.io.IOException;
 import com.truwisatech.rundas.football.data.NcaaFootballDao;
 import com.truwisatech.rundas.football.data.NcaaFootballData;
 import com.truwisatech.rundas.football.data.RundasMySqlConnectionFactory;
-import com.truwisatech.rundas.football.data.beans.GameResult;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
-import com.truwisatech.rundas.football.data.beans.ScheduledGame;
+import com.truwisatech.rundas.football.data.beans.Game;
 
-public class CsvLoader {
+public class ScheduleCsvLoader {
 
 	private static NcaaFootballDao db = new NcaaFootballData(new RundasMySqlConnectionFactory());
 	
@@ -22,23 +21,23 @@ public class CsvLoader {
 	 */
 	public static void main(String[] args) {
 		//TODO update file location/name
-		File input = new File("/Users/johnss4-1/Downloads/DIVISIONB (3).csv");
+		File input = new File("/Users/johnss4-1/Downloads/DIVISIONB (4).csv");
 		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(input));
 			String line = reader.readLine(); //First line is just headings
-			int failedLines = 0;
-			int totalLines = 0;
+			int lineNumber = 0;
 			while ((line = reader.readLine()) != null) {
-				CsvFileLine fileLine = new CsvFileLine(line);
+				lineNumber += 1;
+				System.out.print("Line: " + lineNumber + " ");
+				ScheduleCsvFileLine fileLine = new ScheduleCsvFileLine(line);
 				if (! processFileLine(fileLine)) {
 					System.err.println("Line: " + line + " didn't process");
-					failedLines += 1;
 				}
-				totalLines += 1;
+				
 			}
 			
-			System.out.println("\nComplete\nTotal Lines: " + totalLines);
+			System.out.println("\nComplete\nTotal Lines: " + lineNumber);
 			System.out.println("Games: " + gamesInserted);
 			
 		}
@@ -50,7 +49,7 @@ public class CsvLoader {
 
 	}
 	
-	private static boolean processFileLine(CsvFileLine line) {
+	private static boolean processFileLine(ScheduleCsvFileLine line) {
 		System.out.println("Processing " + line.getTeamName() + " vs " + line.getOppTeamName());
 		
 		NcaaTeam t = new NcaaTeam();
@@ -75,49 +74,40 @@ public class CsvLoader {
 			}
 		}
 		
-		GameResult game = new GameResult();
-		ScheduledGame sched = new ScheduledGame();
-		boolean gamePlayed = false;
+		Game game = new Game();
 		if (line.isHomeGame()) {
-			sched.setHomeTeam(t);
-			sched.setAwayTeam(oppT);
-			if (line.getScoreFor() > -1) {
-				game.setHomeScore(line.getScoreFor());
-				game.setAwayScore(line.getScoreAgainst());
-				gamePlayed = true;
-			}
+			game.setHomeTeam(t);
+			game.setAwayTeam(oppT);
+			game.setHomeScore(line.getScoreFor());
+			game.setAwayScore(line.getScoreAgainst());
 		} else {
-			sched.setHomeTeam(oppT);
-			sched.setAwayTeam(t);
-			if (line.getScoreFor() > -1) {
-				game.setHomeScore(line.getScoreAgainst());
-				game.setAwayScore(line.getScoreFor());
-				gamePlayed = true;
-			}
+			game.setHomeTeam(oppT);
+			game.setAwayTeam(t);
+			game.setHomeScore(line.getScoreAgainst());
+			game.setAwayScore(line.getScoreFor());
 		}
-		sched.setGameDate(line.getGameDate());
+		game.setGameDate(line.getGameDate());
 		
-		if (!db.insertScheduledGame(sched)) {
-			return false;
-		}
-		sched = db.findScheduledGame(sched.getGameDate(), sched.getHomeTeam().getNcaaTeamId(), sched.getAwayTeam().getNcaaTeamId());
+		Game existingGame = db.findGame(game);
 		
-		if (gamePlayed) {
-			sched.setResult(game);
-			if (db.updateScheduledGame(sched) < 0) {
-				return false;
-			}
-			game.setScheduledGame(sched);
-			if (db.insertGameResult(game)) {
-				System.out.println("Inserted " + sched.getAwayTeam().getNcaaTeamName()
-						+ " " + game.getAwayScore() + " at " + sched.getHomeTeam().getNcaaTeamName()
-						+ " " + game.getHomeScore() + " on " + sched.getGameDate());
+		if (existingGame == null) {
+			if (db.insertGame(game)) {
+				System.out.println("Inserted " + game.getAwayTeam().getNcaaTeamName()
+						+ " " + game.getAwayScore() + " at " + game.getHomeTeam().getNcaaTeamName()
+						+ " " + game.getHomeScore() + " on " + game.getGameDate());
 				gamesInserted += 1;
 			} else {
-				System.out.println(sched.getAwayTeam().getNcaaTeamName()
-						+ " " + game.getAwayScore() + " at " + sched.getHomeTeam().getNcaaTeamName()
-						+ " " + game.getHomeScore() + " on " + sched.getGameDate()
-						+ " already in database");
+				return false;
+			}
+		} else {
+			game.setGameId(existingGame.getGameId());
+			if (db.updateGame(game) >= 1) {
+				System.out.println("Updated " + game.getAwayTeam().getNcaaTeamName()
+						+ " " + game.getAwayScore() + " at " + game.getHomeTeam().getNcaaTeamName()
+						+ " " + game.getHomeScore() + " on " + game.getGameDate());
+				gamesInserted += 1;
+			} else {
+				return false;
 			}
 		} 
 		

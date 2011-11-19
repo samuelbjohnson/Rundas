@@ -2,7 +2,7 @@ package com.truwisatech.rundas.football.data.beans;
 
 import java.util.Date;
 
-public class ScheduledGame {
+public class Game {
 	
 	private int gameId = -1;
 	
@@ -11,10 +11,15 @@ public class ScheduledGame {
 	
 	private Date gameDate;
 	
-	private GameResult result;
+	private int homeScore = -1;
+	private int awayScore = -1;
 	
-	public ScheduledGame() {
+	public Game() {
 		
+	}
+	
+	public Game(int id) {
+		gameId = id;
 	}
 	
 	public String toString() {
@@ -53,11 +58,19 @@ public class ScheduledGame {
 		this.gameDate = gameDate;
 	}
 
-	public GameResult getResult() {
-		return result;
+	public int getHomeScore() {
+		return homeScore;
 	}
 
-	public void setResult(GameResult result) {
-		this.result = result;
+	public void setHomeScore(int homeScore) {
+		this.homeScore = homeScore;
+	}
+
+	public int getAwayScore() {
+		return awayScore;
+	}
+
+	public void setAwayScore(int awayScore) {
+		this.awayScore = awayScore;
 	}
 }
