@@ -57,8 +57,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -105,8 +109,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -140,7 +148,9 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				statement.close();
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -187,8 +197,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -235,8 +249,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -282,8 +300,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -329,8 +351,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -365,7 +391,9 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				statement.close();
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);
@@ -413,8 +441,12 @@ public class NcaaFootballData implements NcaaFootballDao {
 		}
 		finally {
 			try {
-				resultSet.close();
-				statement.close();
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
 			}
 			catch (SQLException s) {
 				sqlError(s);

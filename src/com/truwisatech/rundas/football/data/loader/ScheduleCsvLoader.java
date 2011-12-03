@@ -1,55 +1,24 @@
 package com.truwisatech.rundas.football.data.loader;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 
-import com.truwisatech.rundas.football.data.NcaaFootballDao;
-import com.truwisatech.rundas.football.data.NcaaFootballData;
-import com.truwisatech.rundas.football.data.RundasMySqlConnectionFactory;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
 
-public class ScheduleCsvLoader {
-
-	private static NcaaFootballDao db = new NcaaFootballData(new RundasMySqlConnectionFactory());
+public class ScheduleCsvLoader extends GenericCsvLoader {
 	
-	private static int gamesInserted = 0;
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		//TODO update file location/name
-		File input = new File("/Users/johnss4-1/Downloads/DIVISIONB (4).csv");
-		
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(input));
-			String line = reader.readLine(); //First line is just headings
-			int lineNumber = 0;
-			while ((line = reader.readLine()) != null) {
-				lineNumber += 1;
-				System.out.print("Line: " + lineNumber + " ");
-				ScheduleCsvFileLine fileLine = new ScheduleCsvFileLine(line);
-				if (! processFileLine(fileLine)) {
-					System.err.println("Line: " + line + " didn't process");
-				}
-				
-			}
-			
-			System.out.println("\nComplete\nTotal Lines: " + lineNumber);
-			System.out.println("Games: " + gamesInserted);
-			
-		}
-		catch (IOException i) {
-			System.err.print("Problem with file ");
-			System.err.println(i.getMessage());
-			System.exit(0);
-		}
-
+	public ScheduleCsvLoader(String file) {
+		super(new File(file));
 	}
 	
-	private static boolean processFileLine(ScheduleCsvFileLine line) {
+	@Override
+	protected GenericCsvFileLine getFileLineImpl(String line) {
+		return new ScheduleCsvFileLine(line);
+	}
+	
+	@Override
+	protected boolean processFileLine(GenericCsvFileLine fileLine) {
+		ScheduleCsvFileLine line = (ScheduleCsvFileLine) fileLine;
 		System.out.println("Processing " + line.getTeamName() + " vs " + line.getOppTeamName());
 		
 		NcaaTeam t = new NcaaTeam();
@@ -95,7 +64,6 @@ public class ScheduleCsvLoader {
 				System.out.println("Inserted " + game.getAwayTeam().getNcaaTeamName()
 						+ " " + game.getAwayScore() + " at " + game.getHomeTeam().getNcaaTeamName()
 						+ " " + game.getHomeScore() + " on " + game.getGameDate());
-				gamesInserted += 1;
 			} else {
 				return false;
 			}
@@ -105,7 +73,6 @@ public class ScheduleCsvLoader {
 				System.out.println("Updated " + game.getAwayTeam().getNcaaTeamName()
 						+ " " + game.getAwayScore() + " at " + game.getHomeTeam().getNcaaTeamName()
 						+ " " + game.getHomeScore() + " on " + game.getGameDate());
-				gamesInserted += 1;
 			} else {
 				return false;
 			}

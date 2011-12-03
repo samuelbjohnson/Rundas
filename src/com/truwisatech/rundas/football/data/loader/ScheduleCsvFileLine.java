@@ -4,7 +4,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ScheduleCsvFileLine {
+public class ScheduleCsvFileLine extends GenericCsvFileLine {
+	
 	private int teamId;
 	private String teamName;
 	private Date gameDate;
@@ -18,10 +19,15 @@ public class ScheduleCsvFileLine {
 	
 	private static SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 	
-	public ScheduleCsvFileLine(String fileLine) {
-		String[] parsedInputs = fileLine.split(",");
+	public ScheduleCsvFileLine(String line) {
+		super(line);
+	}
+	
+	@Override
+	protected void parseLine() {
+		String[] parsedInputs = line.split(",");
 		if (parsedInputs.length != 8) {
-			System.err.println("File line: " + fileLine + " is invalid");
+			System.err.println("File line: " + line + " is invalid");
 			System.exit(0);
 		}
 		
