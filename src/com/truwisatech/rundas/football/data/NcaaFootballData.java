@@ -13,6 +13,7 @@ import java.util.List;
 import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
+import com.truwisatech.rundas.football.data.beans.PlayerStats;
 
 public class NcaaFootballData implements NcaaFootballDao {
 	private ConnectionFactory connectionFactory;
@@ -471,7 +472,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 			if (! resultSet.next()) {
 				return null;
 			}
-			NcaaPlayer p = new NcaaPlayer();
+			NcaaPlayer p = parsePlayerResult(resultSet);
 			
 			if (resultSet.next()) {
 				throw new FootballDataException("More than one player for ID: " + playerId);
@@ -528,7 +529,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 			if (! resultSet.next()) {
 				return null;
 			}
-			NcaaPlayer p = new NcaaPlayer();
+			NcaaPlayer p = parsePlayerResult(resultSet);
 			
 			if (resultSet.next()) {
 				throw new FootballDataException("More than one player for team: " + teamId + ", uniform number: " + uniformNum);
@@ -657,6 +658,184 @@ public class NcaaFootballData implements NcaaFootballDao {
 			statement.setString(1, player.getYear());
 			statement.setString(2, player.getPosition());
 			statement.setInt(3, player.getPlayerId());
+			
+			int result = statement.executeUpdate();
+			return result;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return -1;
+	}
+	
+	public PlayerStats findPlayerStats(int playerId, Date gameDate) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.PlayerStats WHERE playerId=? AND gameDate=?"
+			);
+			statement.setInt(1, playerId);
+			statement.setDate(2, new java.sql.Date(gameDate.getTime()));
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			PlayerStats p = parsePlayerStatsResult(resultSet);
+			
+			if (resultSet.next()) {
+				throw new FootballDataException("More than one set of stats for player: " + playerId + ", on game date: " + 
+						gameDate);
+			}
+			
+			return p;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	protected PlayerStats parsePlayerStatsResult(ResultSet set) throws SQLException {
+		PlayerStats p = new PlayerStats();
+		
+		p.setPlayerId(set.getInt("playerId"));
+		p.setGameDate(set.getDate("gameDate"));
+		p.setNetRushingYards(set.getInt("netRushingYards"));
+		p.setTotalPassingYards(set.getInt("totalPassingYards"));
+		p.setTotalReceivingYards(set.getInt("totalReceivingYards"));
+		
+		return p;
+	}
+	
+	public PlayerStats[] findPlayerStats(int playerId) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.PlayerStats WHERE playerId=?"
+			);
+			statement.setInt(1, playerId);
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			
+			List<PlayerStats> stats = new LinkedList<PlayerStats>();
+			
+			while (resultSet.next()) {
+				stats.add(parsePlayerStatsResult(resultSet));
+			}
+			
+			if (stats.size() == 0) {
+				return null;
+			} else {
+				return stats.toArray(new PlayerStats[0]);
+			}
+			
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	public boolean insertPlayerStats(PlayerStats stats) {
+		PreparedStatement statement = null;
+		if(stats == null || stats.getPlayerId() < 0 || stats.getGameDate() == null || 
+				findPlayerStats(stats.getPlayerId(), stats.getGameDate()) != null) {
+			return false;
+		}
+		
+		try {
+			
+			statement = conn.prepareStatement(
+					"INSERT INTO Rundas.PlayerStats(playerId, gameDate, netRushingYards, totalPassingYards, totalReceivingYards)" +
+					"VALUES(?, ?, ?, ?, ?)"
+			);
+			statement.setInt(1, stats.getPlayerId());
+			statement.setDate(2, new java.sql.Date(stats.getGameDate().getTime()));
+			statement.setInt(3, stats.getNetRushingYards());
+			statement.setInt(4, stats.getTotalPassingYards());
+			statement.setInt(5, stats.getTotalReceivingYards());
+			
+			int result = statement.executeUpdate();
+			if (result != 1) {
+				throw new FootballDataException("Error on insert of player stats: " + stats);
+			}
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		
+		return true;
+	}
+	
+	public int updatePlayerStats(PlayerStats stats) {
+		PreparedStatement statement = null;
+		if (stats.getPlayerId() < 0) {
+			return -1;
+		}
+		try {
+			statement = conn.prepareStatement(
+					"UPDATE Rundas.PlayerStats SET netRushingYards=?, totalPassingYards=?, totalReceivingYards=? " +
+					"WHERE playerId=? AND gameDate=?"
+			);
+			statement.setInt(1, stats.getNetRushingYards());
+			statement.setInt(2, stats.getTotalPassingYards());
+			statement.setInt(3, stats.getTotalReceivingYards());
+			statement.setInt(4, stats.getPlayerId());
+			statement.setDate(5, new java.sql.Date(stats.getGameDate().getTime()));
 			
 			int result = statement.executeUpdate();
 			return result;

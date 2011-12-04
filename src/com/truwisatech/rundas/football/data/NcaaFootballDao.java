@@ -5,6 +5,7 @@ import java.util.Date;
 import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
+import com.truwisatech.rundas.football.data.beans.PlayerStats;
 
 public interface NcaaFootballDao {
 	public NcaaTeam findTeam(int teamId);
@@ -28,4 +29,10 @@ public interface NcaaFootballDao {
 	
 	public boolean insertPlayer(NcaaPlayer player);
 	public int updatePlayer(NcaaPlayer player);
+	
+	public PlayerStats findPlayerStats(int playerId, Date gameDate);
+	public PlayerStats[] findPlayerStats(int playerId);
+	
+	public boolean insertPlayerStats(PlayerStats stats);
+	public int updatePlayerStats(PlayerStats stats);
 }
