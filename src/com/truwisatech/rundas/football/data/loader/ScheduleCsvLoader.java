@@ -8,7 +8,7 @@ import com.truwisatech.rundas.football.data.beans.Game;
 public class ScheduleCsvLoader extends GenericCsvLoader {
 	
 	public ScheduleCsvLoader(String file) {
-		super(new File(file));
+		super(new File(file), 1);
 	}
 	
 	@Override

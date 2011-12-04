@@ -13,8 +13,9 @@ public abstract class GenericCsvLoader {
 	protected NcaaFootballDao db = new NcaaFootballData(new RundasMySqlConnectionFactory());
 	
 	private File input;
+	private int headerRows;
 	
-	public GenericCsvLoader(File file) {
+	public GenericCsvLoader(File file, int headerRows) {
 		input = file;
 	}
 	
@@ -22,7 +23,10 @@ public abstract class GenericCsvLoader {
 		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(input));
-			String line = reader.readLine(); //First line is just headings
+			String line = null;
+			for (int i=0; i<headerRows; i++) {
+				line = reader.readLine(); //skip header rows
+			}
 			int lineNumber = 0;
 			while ((line = reader.readLine()) != null) {
 				lineNumber += 1;
