@@ -2,6 +2,7 @@ package com.truwisatech.rundas.football.data;
 
 import java.util.Date;
 
+import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
 
@@ -20,4 +21,11 @@ public interface NcaaFootballDao {
 	public int updateGame(Game game);
 	
 	public Game[] findTeamResults(int teamId);
+	
+	public NcaaPlayer findPlayer(int playerId);
+	public NcaaPlayer findPlayer(int teamId, String uniformNum);
+	public NcaaPlayer[] findPlayersForTeam(int teamId);
+	
+	public boolean insertPlayer(NcaaPlayer player);
+	public int updatePlayer(NcaaPlayer player);
 }

@@ -1,7 +1,6 @@
 package com.truwisatech.rundas.football.data.loader;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ScheduleCsvFileLine extends GenericCsvFileLine {
@@ -17,31 +16,18 @@ public class ScheduleCsvFileLine extends GenericCsvFileLine {
 	
 	private boolean homeGame;
 	
-	private static SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
-	
 	public ScheduleCsvFileLine(String line) {
 		super(line);
 	}
 	
 	@Override
-	protected void parseLine() {
-		String[] parsedInputs = line.split(",");
+	protected void parseInputs() {
 		if (parsedInputs.length != 8) {
 			System.err.println("File line: " + line + " is invalid");
-			System.exit(0);
+			throw new CsvFileFormatException();
 		}
 		
-		//remove quotes
-		for (int i = 0; i < parsedInputs.length; i++) {
-			String s = parsedInputs[i];
-			if (s.startsWith("\"")) {
-				s = s.substring(1);
-			}
-			if(s.endsWith("\"")) {
-				s = s.substring(0, s.length() - 1);
-			}
-			parsedInputs[i] = s;
-		}
+		removeQuotes(parsedInputs);
 		
 		teamId = Integer.valueOf(parsedInputs[0]);
 		teamName = parsedInputs[1];
@@ -51,7 +37,7 @@ public class ScheduleCsvFileLine extends GenericCsvFileLine {
 		}
 		catch (ParseException p) {
 			System.err.println("Could Not Parse Date: " + parsedInputs[2]);
-			System.exit(0);
+			throw new CsvFileFormatException("Could not parse date: " + parsedInputs[2]);
 		}
 		
 		oppTeamId = Integer.valueOf(parsedInputs[3]);

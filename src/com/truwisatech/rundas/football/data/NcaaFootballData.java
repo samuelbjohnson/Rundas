@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
 
@@ -453,6 +454,227 @@ public class NcaaFootballData implements NcaaFootballDao {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public NcaaPlayer findPlayer(int playerId) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.NcaaPlayer WHERE ncaaId=?"
+			);
+			statement.setInt(1, playerId);
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			NcaaPlayer p = new NcaaPlayer();
+			
+			if (resultSet.next()) {
+				throw new FootballDataException("More than one player for ID: " + playerId);
+			}
+			
+			return p;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	protected NcaaPlayer parsePlayerResult(ResultSet resultSet) throws SQLException {
+		NcaaPlayer p = new NcaaPlayer();
+		
+		p.setFirstName(resultSet.getString("firstName"));
+		p.setLastName(resultSet.getString("lastName"));
+		p.setPlayerId(resultSet.getInt("ncaaId"));
+		p.setPosition(resultSet.getString("position"));
+		p.setTeamId(resultSet.getInt("teamId"));
+		p.setUniformNum(resultSet.getString("uniformNumber"));
+		p.setYear(resultSet.getString("year"));
+		
+		return p;
+	}
+	
+	@Override
+	public NcaaPlayer findPlayer(int teamId, String uniformNum) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.NcaaPlayer WHERE teamId=? AND uniformNumber=?"
+			);
+			statement.setInt(1, teamId);
+			statement.setString(2, uniformNum);
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			NcaaPlayer p = new NcaaPlayer();
+			
+			if (resultSet.next()) {
+				throw new FootballDataException("More than one player for team: " + teamId + ", uniform number: " + uniformNum);
+			}
+			
+			return p;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public NcaaPlayer[] findPlayersForTeam(int teamId) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.NcaaPlayer WHERE teamId=?"
+			);
+			statement.setInt(1, teamId);
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			
+			List<NcaaPlayer> players = new LinkedList<NcaaPlayer>();
+			
+			while (resultSet.next()) {
+				players.add(parsePlayerResult(resultSet));
+			}
+			
+			if (players.size() == 0) {
+				return null;
+			} else {
+				return players.toArray(new NcaaPlayer[0]);
+			}
+			
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	public boolean insertPlayer(NcaaPlayer player) {
+		PreparedStatement statement = null;
+		if(player == null || player.getTeamId() < 0 || findPlayer(player.getPlayerId()) != null) {
+			return false;
+		}
+		
+		try {
+			
+			statement = conn.prepareStatement(
+					"INSERT INTO Rundas.NcaaPlayer(teamId, uniformNumber, lastName, firstName, position, year, ncaaId) " +
+					"VALUES(?, ?, ?, ?, ?, ?, ?)"
+			);
+			statement.setInt(1, player.getTeamId());
+			statement.setString(2, player.getUniformNum());
+			statement.setString(3, player.getLastName());
+			statement.setString(4, player.getFirstName());
+			statement.setString(5, player.getPosition());
+			statement.setString(6, player.getYear());
+			statement.setInt(7, player.getPlayerId());
+			
+			int result = statement.executeUpdate();
+			if (result != 1) {
+				throw new FootballDataException("Error on insert of player: " + player);
+			}
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		
+		return true;
+	}
+	public int updatePlayer(NcaaPlayer player) {
+		PreparedStatement statement = null;
+		if (player.getPlayerId() < 0) {
+			return -1;
+		}
+		try {
+			statement = conn.prepareStatement(
+					"UPDATE Rundas.NcaaPlayer SET year=?, position=? " +
+					"WHERE ncaaId=?"
+			);
+			statement.setString(1, player.getYear());
+			statement.setString(2, player.getPosition());
+			statement.setInt(3, player.getPlayerId());
+			
+			int result = statement.executeUpdate();
+			return result;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return -1;
 	}
 	
 	private void sqlError(SQLException s) {

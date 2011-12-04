@@ -17,6 +17,7 @@ public abstract class GenericCsvLoader {
 	
 	public GenericCsvLoader(File file, int headerRows) {
 		input = file;
+		this.headerRows = headerRows;
 	}
 	
 	public void processFile() {
