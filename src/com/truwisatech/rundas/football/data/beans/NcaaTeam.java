@@ -17,4 +17,7 @@ public class NcaaTeam {
 		this.ncaaTeamName = ncaaTeamName;
 	}
 	
+	public String toJson() {
+		return "{\"teamName\":\"" + ncaaTeamName + "\", \"teamId\":\"" + ncaaTeamId + "\"}";
+	}
 }
