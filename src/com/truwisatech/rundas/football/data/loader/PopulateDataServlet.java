@@ -23,8 +23,9 @@ public class PopulateDataServlet extends HttpServlet {
 		List<GenericCsvLoader> loaders = new LinkedList<GenericCsvLoader>();
 		
 		//specify loaders, one per csv file
-		loaders.add(new ScheduleCsvLoader(getServletContext().getRealPath("/WEB-INF/csvFiles/schedules.csv")));
-		loaders.add(new RosterCsvLoader(getServletContext().getRealPath("/WEB-INF/csvFiles/rosters.csv")));
+		//loaders.add(new ScheduleCsvLoader(getServletContext().getRealPath("/WEB-INF/csvFiles/schedules.csv")));
+		//loaders.add(new RosterCsvLoader(getServletContext().getRealPath("/WEB-INF/csvFiles/rosters.csv")));
+		loaders.add(new StatsCsvLoader(getServletContext().getRealPath("/WEB-INF/csvFiles/offense.csv")));
 		
 		try {
 			for (GenericCsvLoader l : loaders) {

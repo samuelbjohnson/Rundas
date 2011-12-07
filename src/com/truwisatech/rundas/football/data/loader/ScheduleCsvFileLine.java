@@ -32,13 +32,7 @@ public class ScheduleCsvFileLine extends GenericCsvFileLine {
 		teamId = Integer.valueOf(parsedInputs[0]);
 		teamName = parsedInputs[1];
 		
-		try {
-			gameDate = format.parse(parsedInputs[2]);
-		}
-		catch (ParseException p) {
-			System.err.println("Could Not Parse Date: " + parsedInputs[2]);
-			throw new CsvFileFormatException("Could not parse date: " + parsedInputs[2]);
-		}
+		gameDate = parseDate(parsedInputs[2]);
 		
 		oppTeamId = Integer.valueOf(parsedInputs[3]);
 		oppTeamName = parsedInputs[4];

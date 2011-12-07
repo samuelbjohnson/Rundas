@@ -1,6 +1,8 @@
 package com.truwisatech.rundas.football.data.loader;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public abstract class GenericCsvFileLine {
 	protected String line;
@@ -42,6 +44,17 @@ public abstract class GenericCsvFileLine {
 				s = s.substring(0, s.length() - 1);
 			}
 			parsedInputs[i] = s;
+		}
+	}
+	
+	protected Date parseDate(String dateString) {
+		try {
+			Date date = format.parse(dateString);
+			return date;
+		}
+		catch (ParseException p) {
+			System.err.println("Could Not Parse Date: " + parsedInputs[2]);
+			throw new CsvFileFormatException("Could not parse date: " + parsedInputs[2]);
 		}
 	}
 
