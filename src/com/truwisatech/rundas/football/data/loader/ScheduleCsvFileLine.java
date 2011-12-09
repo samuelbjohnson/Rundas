@@ -1,6 +1,5 @@
 package com.truwisatech.rundas.football.data.loader;
 
-import java.text.ParseException;
 import java.util.Date;
 
 public class ScheduleCsvFileLine extends GenericCsvFileLine {
@@ -11,8 +10,8 @@ public class ScheduleCsvFileLine extends GenericCsvFileLine {
 	private int oppTeamId;
 	private String oppTeamName;
 	
-	private int scoreFor = -1;
-	private int scoreAgainst = -1;
+	private int scoreFor;
+	private int scoreAgainst;
 	
 	private boolean homeGame;
 	

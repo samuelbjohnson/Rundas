@@ -6,6 +6,7 @@ import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
 import com.truwisatech.rundas.football.data.beans.PlayerStats;
+import com.truwisatech.rundas.football.data.beans.TeamStats;
 
 public interface NcaaFootballDao {
 	public NcaaTeam findTeam(int teamId);
@@ -15,6 +16,7 @@ public interface NcaaFootballDao {
 	
 	public Game findGame(Game game);
 	public Game findGame(Date gameDate, int homeId, int awayId);
+	public Game findGame(Date gameDate, int teamId);
 	
 	public Game[] findTeamGames(int teamId);
 	
@@ -35,4 +37,7 @@ public interface NcaaFootballDao {
 	
 	public boolean insertPlayerStats(PlayerStats stats);
 	public int updatePlayerStats(PlayerStats stats);
+	
+	public TeamStats findTeamStats(int teamId, Date gameDate);
+	public TeamStats[] findSeasonTeamStats(int teamId);
 }

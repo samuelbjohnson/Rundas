@@ -1,13 +1,15 @@
 package com.truwisatech.rundas.football.data.loader;
 
+import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import com.truwisatech.rundas.football.Constants;
 
 public abstract class GenericCsvFileLine {
 	protected String line;
 	
-	protected static SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	protected static DateFormat format = Constants.DATE_FORMAT;
 	
 	protected String[] parsedInputs;
 	

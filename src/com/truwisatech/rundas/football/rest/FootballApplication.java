@@ -9,7 +9,7 @@ public class FootballApplication extends Application {
 	private Set<Object> singletons = new HashSet<Object>();
 	
 	public FootballApplication() {
-		singletons.add(new TeamData());
+		singletons.add(new TeamDataService());
 	}
 	
 	@Override

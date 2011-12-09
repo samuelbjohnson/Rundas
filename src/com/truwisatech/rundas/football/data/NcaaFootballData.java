@@ -14,6 +14,7 @@ import com.truwisatech.rundas.football.data.beans.NcaaPlayer;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
 import com.truwisatech.rundas.football.data.beans.Game;
 import com.truwisatech.rundas.football.data.beans.PlayerStats;
+import com.truwisatech.rundas.football.data.beans.TeamStats;
 
 public class NcaaFootballData implements NcaaFootballDao {
 	private ConnectionFactory connectionFactory;
@@ -242,6 +243,57 @@ public class NcaaFootballData implements NcaaFootballDao {
 				throw new FootballDataException(
 						"Multiple games between: " + awayId + " and " + 
 						homeId + " on " + gameDate);
+			}
+			
+			return game;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public Game findGame(Date gameDate, int teamId) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT * FROM Rundas.Games WHERE gameDate=? AND (awayTeamId=? OR homeTeamId=?)"
+			);
+			statement.setDate(1, new java.sql.Date(gameDate.getTime()));
+			statement.setInt(2, teamId);
+			statement.setInt(3, teamId);
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			
+			Game game = new Game();
+			game.setGameId(resultSet.getInt("gameId"));
+			game.setHomeTeam(findTeam(resultSet.getInt("homeTeamId")));
+			game.setAwayTeam(findTeam(resultSet.getInt("awayTeamId")));
+			game.setGameDate(resultSet.getDate("gameDate"));
+			game.setHomeScore(resultSet.getInt("homeScore"));
+			game.setAwayScore(resultSet.getInt("awayScore"));
+			
+			if (resultSet.next()) {
+				throw new FootballDataException(
+						"Multiple games for team: " + teamId + " on " + gameDate);
 			}
 			
 			return game;
@@ -854,6 +906,122 @@ public class NcaaFootballData implements NcaaFootballDao {
 			}
 		}
 		return -1;
+	}
+	
+	public TeamStats findTeamStats(int teamId, Date gameDate) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT gameDate, SUM( netRushingYards ) AS netRushingYards, SUM( totalPassingYards ) AS totalPassingYards, " +
+					"sum( totalReceivingYards) as totalReceivingYards FROM PlayerStats WHERE playerId IN (" +
+						"SELECT ncaaId FROM NcaaPlayer WHERE teamId=?" +
+					") AND gameDate=?"
+			);
+			statement.setInt(1, teamId);
+			statement.setDate(2, new java.sql.Date(gameDate.getTime()));
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			TeamStats t = new TeamStats(teamId);
+			parseTeamStatsResult(resultSet, t);
+			
+			Game g = findGame(gameDate, teamId);
+			t.setGame(g);
+			t.setOpponent(teamId == g.getHomeTeam().getNcaaTeamId() ? 
+					findTeam(g.getAwayTeam().getNcaaTeamId()) : findTeam(g.getHomeTeam().getNcaaTeamId()));
+			
+			if (resultSet.next()) {
+				throw new FootballDataException("More than one set of stats for teamId: " + teamId + ", on game date: " + 
+						gameDate);
+			}
+			
+			return t;
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
+	}
+	
+	protected void parseTeamStatsResult(ResultSet set, TeamStats t) throws SQLException {
+		t.setGameDate(set.getDate("gameDate"));
+		t.setNetRushingYards(set.getInt("netRushingYards"));
+		t.setTotalPassingYards(set.getInt("totalPassingYards"));
+		t.setTotalReceivingYards(set.getInt("totalReceivingYards"));
+	}
+	
+	public TeamStats[] findSeasonTeamStats(int teamId) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = conn.prepareStatement(
+					"SELECT gameDate, SUM( netRushingYards ) AS netRushingYards, SUM( totalPassingYards ) AS totalPassingYards, " +
+							"sum( totalReceivingYards) as totalReceivingYards FROM PlayerStats WHERE playerId IN (" +
+								"SELECT ncaaId FROM NcaaPlayer WHERE teamId=?" +
+							") group by gameDate"
+			);
+			statement.setInt(1, teamId);
+			
+			resultSet = statement.executeQuery();
+			
+			if (! resultSet.next()) {
+				return null;
+			}
+			
+			List<TeamStats> stats = new LinkedList<TeamStats>();
+			
+			while (resultSet.next()) {
+				TeamStats t = new TeamStats(teamId);
+				parseTeamStatsResult(resultSet, t);
+				Game g = findGame(t.getGameDate(), teamId);
+				t.setGame(g);
+				t.setOpponent(teamId == g.getHomeTeam().getNcaaTeamId() ? 
+						findTeam(g.getAwayTeam().getNcaaTeamId()) : findTeam(g.getHomeTeam().getNcaaTeamId()));
+				
+				stats.add(t);
+			}
+			
+			if (stats.size() == 0) {
+				return null;
+			} else {
+				return stats.toArray(new TeamStats[0]);
+			}
+			
+		}
+		catch (SQLException s) {
+			sqlError(s);
+		}
+		finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+				if (statement != null) {
+					statement.close();
+				}
+			}
+			catch (SQLException s) {
+				sqlError(s);
+			}
+		}
+		return null;
 	}
 	
 	private void sqlError(SQLException s) {

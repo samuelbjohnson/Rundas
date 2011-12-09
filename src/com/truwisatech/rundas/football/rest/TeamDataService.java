@@ -1,7 +1,6 @@
 package com.truwisatech.rundas.football.rest;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import static com.truwisatech.rundas.football.rest.JsonConverters.*;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,9 +12,10 @@ import com.truwisatech.rundas.football.data.NcaaFootballDao;
 import com.truwisatech.rundas.football.data.NcaaFootballData;
 import com.truwisatech.rundas.football.data.RundasMySqlConnectionFactory;
 import com.truwisatech.rundas.football.data.beans.NcaaTeam;
+import com.truwisatech.rundas.football.data.beans.TeamStats;
 
 @Path("/teams")
-public class TeamData {
+public class TeamDataService {
 	private NcaaFootballDao db = new NcaaFootballData(new RundasMySqlConnectionFactory());
 	
 	@GET
@@ -25,40 +25,27 @@ public class TeamData {
 	}
 	
 	@GET
-	@Path("/find")
+	@Path("/findTeams")
 	@Produces("application/json")
 	public StreamingOutput findTeams(@QueryParam("id") int teamId) {
 		if (teamId < 1) {
 			NcaaTeam[] allTeams = db.findTeams();
-			return convertTeamToJson(allTeams);
+			return buildOutput(convertToJson(allTeams));
 		} else {
 			NcaaTeam[] oneTeam = { db.findTeam(teamId) };
-			return convertTeamToJson(oneTeam);
+			return buildOutput(convertToJson(oneTeam));
 		}
 	}
 	
-	private StreamingOutput convertTeamToJson(NcaaTeam[] teams) {
-		StringBuffer b = new StringBuffer();
-		if (teams.length == 1) {
-			b.append(teams[0].toJson());
-		} else if (teams.length > 1) {
-			boolean first = true;
-			b.append("[");
-			for(NcaaTeam t : teams) {
-				if (first) {
-					first = false;
-				} else {
-					b.append(", ");
-				}
-				b.append(t.toJson());
-			}
-			b.append("]");
+	@GET
+	@Path("/findStats")
+	@Produces("application/json")
+	public StreamingOutput findTeamStats(@QueryParam("id") int teamId) {
+		if (teamId < 1) {
+			return buildOutput("{}");
+		} else {
+			TeamStats[] stats = db.findSeasonTeamStats(teamId);
+			return buildOutput(convertToJson(stats));
 		}
-		final String json = b.toString();
-		return new StreamingOutput() {
-			public void write(OutputStream os) throws IOException {
-				os.write(json.getBytes());
-			}
-		};
 	}
 }
