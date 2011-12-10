@@ -34,14 +34,14 @@ public class TeamStats extends PlayerStats {
 	public String toJson() {
 		StringBuffer b = new StringBuffer();
 		b.append("{\"gameDate\":\"" + DATE_FORMAT.format(game.getGameDate()) + "\", ");
-		b.append("\"opponentId\":\"" + opponent.getNcaaTeamId() + "\", ");
+		b.append("\"opponentId\":" + opponent.getNcaaTeamId() + ", ");
 		b.append("\"opponentName\":\"" + (atHome ? "" : "@") + opponent.getNcaaTeamName() + "\", ");
-		b.append("\"atHome\":\"" + (atHome ? "true" : "false") + "\", ");
-		b.append("\"awayScore\":\"" + game.getAwayScore() + "\", ");
-		b.append("\"homeScore\":\"" + game.getHomeScore() + "\", ");
-		b.append("\"rushingYards\":\"" + getNetRushingYards() + "\", ");
-		b.append("\"passingYards\":\"" + getTotalPassingYards() + "\", ");
-		b.append("\"receivingYards\":\"" + getTotalReceivingYards() + "\"");
+		b.append("\"atHome\":" + (atHome ? "true" : "false") + ", ");
+		b.append("\"awayScore\":" + game.getAwayScore() + ", ");
+		b.append("\"homeScore\":" + game.getHomeScore() + ", ");
+		b.append("\"rushingYards\":" + getNetRushingYards() + ", ");
+		b.append("\"passingYards\":" + getTotalPassingYards() + ", ");
+		b.append("\"receivingYards\":" + getTotalReceivingYards());
 		b.append("}");
 		return b.toString();
 	}
