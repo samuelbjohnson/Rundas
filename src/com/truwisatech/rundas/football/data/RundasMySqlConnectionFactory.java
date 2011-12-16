@@ -11,7 +11,7 @@ public class RundasMySqlConnectionFactory implements ConnectionFactory {
 		Connection conn = null;
 		
 		String DRIVER = "com.mysql.jdbc.Driver";
-		String URL = "jdbc:mysql://localhost:8889/Rundas?user=rundas&password=Rundas1";
+		String URL = "jdbc:mysql://localhost:3306/Rundas?user=rundas&password=Rundas1";
 		
 		try {
 			Class.forName(DRIVER);

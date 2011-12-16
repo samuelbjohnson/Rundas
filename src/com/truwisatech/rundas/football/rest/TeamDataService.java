@@ -2,6 +2,9 @@ package com.truwisatech.rundas.football.rest;
 
 import static com.truwisatech.rundas.football.rest.JsonConverters.*;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -47,5 +50,18 @@ public class TeamDataService {
 			TeamStats[] stats = db.findSeasonTeamStats(teamId);
 			return buildOutput(convertToJson(stats));
 		}
+	}
+	
+	@GET
+	@Path("findConferenceTeams")
+	@Produces("application/json")
+	//TODO add parameter for team or conference id--right now, default to Big Ten
+	public StreamingOutput findConferenceTeams() {
+		int[] teamIds = {539, 518, 418, 416, 428, 306, 301, 559, 509, 312, 463, 796};
+		LinkedList<NcaaTeam> teams = new LinkedList<NcaaTeam>();
+		for(int id : teamIds) {
+			teams.add(db.findTeam(id));
+		}
+		return buildOutput(convertToJson(teams.toArray(new NcaaTeam[0])));
 	}
 }

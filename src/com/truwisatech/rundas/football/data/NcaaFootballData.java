@@ -166,7 +166,7 @@ public class NcaaFootballData implements NcaaFootballDao {
 	@Override
 	public Game findGame(Game game) {
 		if (game.getGameId() < 1) {
-			return findGame(game.getGameDate(), game.getHomeTeam().getNcaaTeamId(), game.getAwayTeam().getNcaaTeamId());
+			return findGame(game.getGameDate(), game.getHomeTeam().getNcaaTeamId());
 		}
 		int gameId = game.getGameId();
 		PreparedStatement statement = null;
